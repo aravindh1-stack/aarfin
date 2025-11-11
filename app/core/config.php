@@ -1,9 +1,9 @@
 <?php
 // -- DATABASE CREDENTIALS --
-define('DB_HOST', 'sql110.infinityfree.com');
-define('DB_NAME', 'if0_39969398_paycircle');
-define('DB_USER', 'if0_39969398');
-define('DB_PASS', 'Ourtime8513'); // Unga password
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'aarfin');
+define('DB_USER', 'root');
+define('DB_PASS', ''); // Default XAMPP password is empty
 
 // -- APP CONFIGURATION --
 // App Root (For file includes like 'require_once')
