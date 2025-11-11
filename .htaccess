@@ -1,0 +1,5 @@
+# Turn on the rewrite engine
+RewriteEngine On
+
+# Send all requests to the public folder and APPEND the query string (like ?lang=ta)
+RewriteRule ^(.*)$ public/$1 [QSA,L]
