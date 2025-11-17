@@ -1,6 +1,21 @@
 <?php
 require_once __DIR__ . '/../core/init.php';
 
+// Clear remember-me token in DB if possible
+if (!empty($_SESSION['user_id'])) {
+    try {
+        $stmt = $pdo->prepare('UPDATE users SET remember_token = NULL, remember_expires = NULL WHERE id = ?');
+        $stmt->execute([$_SESSION['user_id']]);
+    } catch (Exception $e) {
+        // ignore
+    }
+}
+
+// Clear remember-me cookie
+if (!empty($_COOKIE['remember_token'])) {
+    setcookie('remember_token', '', time() - 3600, '/');
+}
+
 // Clear all session data and destroy the session
 $_SESSION = [];
 if (ini_get('session.use_cookies')) {

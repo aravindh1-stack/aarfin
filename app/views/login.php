@@ -24,6 +24,13 @@ require_once APP_ROOT . '/templates/header.php';
                 <input type="password" id="password" name="password" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900" />
             </div>
 
+            <div class="flex items-center justify-between text-[0.75rem] text-slate-600">
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="remember" value="1" class="h-3.5 w-3.5 rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
+                    <span>Remember me</span>
+                </label>
+            </div>
+
             <button type="submit" class="w-full inline-flex items-center justify-center rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">
                 Login
             </button>
