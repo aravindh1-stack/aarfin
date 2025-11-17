@@ -11,10 +11,10 @@ require_once __DIR__ . '/../app/core/init.php';
 $page = $_GET['page'] ?? 'dashboard';
 
 // A list of pages that are regular views with HTML templates
-$viewPages = ['dashboard', 'members', 'payments', 'expenses', 'reports', 'settings'];
+$viewPages = ['login', 'dashboard', 'members', 'payments', 'expenses', 'reports', 'settings'];
 
 // A list of special action pages (like PDF generation) that don't have HTML templates
-$actionPages = ['generate_report'];
+$actionPages = ['generate_report', 'login_action', 'logout'];
 
 
 // --- Routing Logic ---

@@ -63,7 +63,7 @@ $currentPage = $currentPage ?? '';
     </nav>
 
     <!-- Language switcher -->
-    <div class="px-4 pb-4 pt-4 border-t border-slate-200 bg-white">
+    <div class="px-4 pb-2 pt-4 border-t border-slate-200 bg-white">
         <div class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 text-[0.75rem] font-semibold text-slate-600 border border-slate-200">
             <?php
             $current_url = strtok($_SERVER['REQUEST_URI'], '?');
@@ -91,6 +91,17 @@ $currentPage = $currentPage ?? '';
                 </a>
             </div>
         </div>
+    </div>
+
+    <!-- Logout button -->
+    <div class="px-4 pb-4 bg-white">
+        <a
+            href="<?php echo URL_ROOT; ?>/?page=logout"
+            class="flex items-center justify-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-[0.8rem] font-semibold text-rose-700 hover:bg-rose-100 hover:border-rose-300 transition-all duration-200"
+        >
+            <i class="fas fa-sign-out-alt text-xs"></i>
+            <span>Logout</span>
+        </a>
     </div>
     
 </aside>
