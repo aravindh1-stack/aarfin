@@ -58,16 +58,16 @@ $projectStartDateFormatted = date('l, F d, Y', strtotime($projectStartDate));
 
     <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
         <!-- Top bar: connected to sidebar like a global header -->
-        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-3 lg:-mx-8 lg:px-8 flex flex-col gap-1">
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900 lg:text-2xl"><?php echo trans('settings'); ?></h1>
-            <p class="text-xs text-slate-500"><?php echo trans('app_settings') ?? 'Manage how your app calculates and shows weekly data.'; ?></p>
+        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-5 lg:-mx-8 lg:px-8 flex flex-col gap-1 shadow-sm">
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('settings'); ?></h1>
+            <p class="text-sm text-slate-600"><?php echo trans('app_settings') ?? 'Manage how your app calculates and shows weekly data.'; ?></p>
         </div>
 
         <div class="space-y-6 max-w-2xl">
             <form action="<?php echo URL_ROOT; ?>/settings" method="POST" class="space-y-6">
 
                 <!-- Select Viewing Week -->
-                <section class="rounded-2xl bg-white shadow-sm border border-slate-100 p-5">
+                <section class="rounded-xl bg-white shadow-lg border border-slate-200 p-6">
                     <h2 class="text-sm font-semibold text-slate-900 mb-1"><?php echo trans('select_viewing_week') ?? 'Select Viewing Week'; ?></h2>
                     <p class="text-xs text-slate-500 mb-4"><?php echo trans('select_viewing_week_desc') ?? 'Manually select a week to view its data.'; ?></p>
 
@@ -88,7 +88,7 @@ $projectStartDateFormatted = date('l, F d, Y', strtotime($projectStartDate));
                 </section>
 
                 <!-- Project Settings -->
-                <section class="rounded-2xl bg-white shadow-sm border border-slate-100 p-5">
+                <section class="rounded-xl bg-white shadow-lg border border-slate-200 p-6">
                 <h2 class="text-sm font-semibold text-slate-900 mb-1"><?php echo trans('project_settings') ?? 'Project Settings'; ?></h2>
                 <p class="text-xs text-slate-500 mb-4"><?php echo trans('project_settings_desc') ?? 'Configure how your project weeks are calculated.'; ?></p>
 
@@ -115,12 +115,12 @@ $projectStartDateFormatted = date('l, F d, Y', strtotime($projectStartDate));
                     </div>
 
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <button type="submit" name="action" value="update_settings" class="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800">
+                        <button type="submit" name="action" value="update_settings" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg transition-all duration-200">
                             <i class="fas fa-save text-xs"></i>
                             <span><?php echo trans('save_settings') ?? 'Save Settings'; ?></span>
                         </button>
 
-                        <button type="submit" name="action" value="go_current_week" class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50">
+                        <button type="submit" name="action" value="go_current_week" class="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-all duration-200">
                             <i class="fas fa-crosshairs text-xs"></i>
                             <span><?php echo trans('go_to_current_week') ?? 'Go to Current Week'; ?></span>
                         </button>

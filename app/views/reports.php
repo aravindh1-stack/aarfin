@@ -55,13 +55,13 @@ $totalPendingAll = (float)$reportStats['pending_total'];
     <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
 
         <!-- Top bar: connected to sidebar like a global header -->
-        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-3 lg:-mx-8 lg:px-8 flex flex-col gap-1">
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900 lg:text-2xl">Weekly Reports</h1>
-            <p class="text-xs text-slate-500">Report for Week <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></p>
+        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-5 lg:-mx-8 lg:px-8 flex flex-col gap-1 shadow-sm">
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Weekly Reports</h1>
+            <p class="text-sm text-slate-600">Report for Week <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></p>
         </div>
 
         <!-- Report content -->
-        <div class="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
+        <div class="rounded-xl bg-white shadow-lg border border-slate-200 overflow-hidden">
             <div class="px-4 py-3 border-b border-slate-100 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h2 class="text-sm font-semibold text-slate-900">Summary</h2>
@@ -78,7 +78,7 @@ $totalPendingAll = (float)$reportStats['pending_total'];
                     </div>
                 </div>
                 <?php if (count($paymentList) > 0): ?>
-                <a href="<?php echo URL_ROOT; ?>/generate_report?week=<?php echo $selectedWeek; ?>&year=<?php echo $selectedYear; ?>" class="inline-flex items-center justify-center gap-2 rounded-full bg-rose-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-rose-700">
+                <a href="<?php echo URL_ROOT; ?>/generate_report?week=<?php echo $selectedWeek; ?>&year=<?php echo $selectedYear; ?>" class="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 hover:bg-red-700 px-4 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg transition-all duration-200">
                     <i class="fas fa-file-pdf text-xs"></i><span class="hidden sm:inline">Download PDF</span>
                 </a>
                 <?php endif; ?>

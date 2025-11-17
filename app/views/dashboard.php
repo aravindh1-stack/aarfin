@@ -44,12 +44,12 @@ $recentPayments = $pdo->query("
     <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
 
         <!-- Top bar: connected to sidebar like a global header -->
-        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-3 lg:-mx-8 lg:px-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-5 lg:-mx-8 lg:px-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between shadow-sm">
             <div>
-                <h1 class="text-xl font-semibold tracking-tight text-slate-900 lg:text-2xl"><?php echo trans('dashboard'); ?></h1>
-                <p class="mt-0.5 text-xs text-slate-500">
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('dashboard'); ?></h1>
+                <p class="mt-1 text-sm text-slate-600">
                     <?php echo trans('dashboard_welcome'); ?>
-                    <span class="font-medium text-slate-700"><?php echo trans('week') . ' ' . $currentWeek . ', ' . $currentYear; ?></span>
+                    <span class="font-semibold text-slate-900"><?php echo trans('week') . ' ' . $currentWeek . ', ' . $currentYear; ?></span>
                 </p>
             </div>
             <div class="flex items-center gap-3">
@@ -75,67 +75,67 @@ $recentPayments = $pdo->query("
         </div>
 
         <!-- KPI cards -->
-        <div class="grid grid-cols-1 gap-5 mb-8 md:grid-cols-2 xl:grid-cols-4">
-            <div class="relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
+        <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+            <div class="relative overflow-hidden rounded-xl bg-white p-6 shadow-lg border border-slate-200 hover:shadow-xl transition-shadow duration-300">
                 <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400"><?php echo trans('active_members'); ?></p>
-                        <p class="mt-2 text-3xl font-semibold text-slate-900"><?php echo $totalActiveMembers; ?></p>
-                        <p class="mt-1 text-xs text-emerald-500">
-                            <i class="fas fa-arrow-up text-[0.65rem]"></i>
-                            <span class="ml-1">+0% <?php echo trans('this_week_collection'); ?></span>
+                    <div class="flex-1">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500"><?php echo trans('active_members'); ?></p>
+                        <p class="mt-3 text-4xl font-bold text-slate-900"><?php echo $totalActiveMembers; ?></p>
+                        <p class="mt-2 text-xs font-medium text-emerald-600 inline-flex items-center gap-1">
+                            <i class="fas fa-arrow-up text-[0.55rem]"></i>
+                            <span>Active Status</span>
                         </p>
                     </div>
-                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-500">
-                        <i class="fas fa-users"></i>
+                    <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600 shadow-sm">
+                        <i class="fas fa-users text-xl"></i>
                     </div>
                 </div>
             </div>
 
-            <div class="relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
+            <div class="relative overflow-hidden rounded-xl bg-white p-6 shadow-lg border border-slate-200 hover:shadow-xl transition-shadow duration-300">
                 <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400"><?php echo trans('this_week_collection'); ?></p>
-                        <p class="mt-2 text-3xl font-semibold text-emerald-600"><?php echo formatCurrency($weeklyCollection); ?></p>
-                        <p class="mt-1 text-xs text-emerald-500">
-                            <i class="fas fa-arrow-up text-[0.65rem]"></i>
-                            <span class="ml-1">+0% <?php echo trans('week'); ?></span>
+                    <div class="flex-1">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500"><?php echo trans('this_week_collection'); ?></p>
+                        <p class="mt-3 text-4xl font-bold text-emerald-600"><?php echo formatCurrency($weeklyCollection); ?></p>
+                        <p class="mt-2 text-xs font-medium text-emerald-600 inline-flex items-center gap-1">
+                            <i class="fas fa-check-circle text-[0.55rem]"></i>
+                            <span>Collected</span>
                         </p>
                     </div>
-                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500">
-                        <i class="fas fa-check-circle"></i>
+                    <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 shadow-sm">
+                        <i class="fas fa-check-circle text-xl"></i>
                     </div>
                 </div>
             </div>
 
-            <div class="relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
+            <div class="relative overflow-hidden rounded-xl bg-white p-6 shadow-lg border border-slate-200 hover:shadow-xl transition-shadow duration-300">
                 <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400"><?php echo trans('pending_this_week'); ?></p>
-                        <p class="mt-2 text-3xl font-semibold text-amber-500"><?php echo formatCurrency($weeklyPendingAmount); ?></p>
-                        <p class="mt-1 text-xs text-amber-500">
-                            <i class="fas fa-arrow-down text-[0.65rem]"></i>
-                            <span class="ml-1"><?php echo trans('pending_this_week'); ?></span>
+                    <div class="flex-1">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500"><?php echo trans('pending_this_week'); ?></p>
+                        <p class="mt-3 text-4xl font-bold text-amber-600"><?php echo formatCurrency($weeklyPendingAmount); ?></p>
+                        <p class="mt-2 text-xs font-medium text-amber-600 inline-flex items-center gap-1">
+                            <i class="fas fa-hourglass-half text-[0.55rem]"></i>
+                            <span>Awaiting</span>
                         </p>
                     </div>
-                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-500">
-                        <i class="fas fa-clock"></i>
+                    <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 text-amber-600 shadow-sm">
+                        <i class="fas fa-hourglass-half text-xl"></i>
                     </div>
                 </div>
             </div>
 
-            <div class="relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
+            <div class="relative overflow-hidden rounded-xl bg-white p-6 shadow-lg border border-slate-200 hover:shadow-xl transition-shadow duration-300">
                 <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400"><?php echo trans('unpaid_members'); ?></p>
-                        <p class="mt-2 text-3xl font-semibold text-rose-500"><?php echo $pendingMembersCount; ?></p>
-                        <p class="mt-1 text-xs text-rose-500">
-                            <i class="fas fa-user-times text-[0.65rem]"></i>
-                            <span class="ml-1"><?php echo trans('pending_members_list'); ?></span>
+                    <div class="flex-1">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500"><?php echo trans('unpaid_members'); ?></p>
+                        <p class="mt-3 text-4xl font-bold text-red-600"><?php echo $pendingMembersCount; ?></p>
+                        <p class="mt-2 text-xs font-medium text-red-600 inline-flex items-center gap-1">
+                            <i class="fas fa-exclamation-circle text-[0.55rem]"></i>
+                            <span>Action Required</span>
                         </p>
                     </div>
-                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
-                        <i class="fas fa-user-times"></i>
+                    <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-red-100 to-red-50 text-red-600 shadow-sm">
+                        <i class="fas fa-exclamation-circle text-xl"></i>
                     </div>
                 </div>
             </div>
@@ -143,7 +143,7 @@ $recentPayments = $pdo->query("
 
         <!-- Middle row: statistics & recent payments -->
         <div class="grid grid-cols-1 gap-6 mb-8 xl:grid-cols-3">
-            <div class="xl:col-span-2 rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
+            <div class="xl:col-span-2 rounded-xl bg-white p-6 shadow-lg border border-slate-200">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h2 class="text-sm font-semibold text-slate-900"><?php echo trans('statistics'); ?></h2>
@@ -188,7 +188,7 @@ $recentPayments = $pdo->query("
                 </div>
             </div>
 
-            <div class="rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
+            <div class="rounded-xl bg-white p-6 shadow-lg border border-slate-200">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-sm font-semibold text-slate-900"><?php echo trans('recent_payments'); ?></h2>
                     <span class="rounded-full bg-slate-50 px-2.5 py-0.5 text-[0.65rem] font-medium text-slate-500 border border-slate-100"><?php echo trans('this_week_collection'); ?></span>
@@ -212,7 +212,7 @@ $recentPayments = $pdo->query("
         </div>
 
         <!-- Bottom row: pending members -->
-        <div class="rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
+        <div class="rounded-xl bg-white p-6 shadow-lg border border-slate-200">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-sm font-semibold text-slate-900"><?php echo trans('pending_members_list'); ?></h2>
                 <span class="rounded-full bg-rose-50 px-2.5 py-0.5 text-[0.65rem] font-medium text-rose-500 border border-rose-100 flex items-center gap-1">

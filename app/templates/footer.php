@@ -1,10 +1,10 @@
-<div id="toast" class="fixed top-6 right-6 z-[100] w-full max-w-xs transform transition-all duration-300 translate-x-full opacity-0" role="alert">
-    <div class="flex items-center w-full p-4 text-slate-500 bg-white rounded-xl shadow-2xl">
-        <div id="toast-icon" class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg"></div>
-        <div id="toast-message" class="ml-3 text-sm font-normal"></div>
-        <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-white text-slate-400 hover:text-slate-900 rounded-lg p-1.5" onclick="hideToast()">
+<div id="toast" class="fixed bottom-6 right-6 z-[100] w-full max-w-sm transform transition-all duration-300 translate-x-[120%] opacity-0" role="alert">
+    <div class="flex items-start gap-4 w-full p-4 text-slate-700 bg-white rounded-lg shadow-lg border border-slate-200">
+        <div id="toast-icon" class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full"></div>
+        <div id="toast-message" class="flex-1 text-sm font-medium"></div>
+        <button type="button" class="ml-auto flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors duration-200 p-1" onclick="hideToast()">
             <span class="sr-only">Close</span>
-            <i class="fas fa-times"></i>
+            <i class="fas fa-times text-base"></i>
         </button>
     </div>
 </div>

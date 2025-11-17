@@ -61,13 +61,13 @@ $totalPendingAll = max(0, $totalDueAll - $totalCollectedAll);
     <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
 
         <!-- Top bar: connected to sidebar like a global header -->
-        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-3 lg:-mx-8 lg:px-8 flex flex-col gap-1">
-            <h1 class="text-xl font-semibold tracking-tight text-slate-900 lg:text-2xl"><?php echo trans('weekly_payment_status'); ?></h1>
-            <p class="text-xs text-slate-500"><?php echo trans('status_for_week'); ?> <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></p>
+        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-5 lg:-mx-8 lg:px-8 flex flex-col gap-1 shadow-sm">
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('weekly_payment_status'); ?></h1>
+            <p class="text-sm text-slate-600"><?php echo trans('status_for_week'); ?> <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></p>
         </div>
 
         <!-- Payments list -->
-        <div class="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
+        <div class="rounded-xl bg-white shadow-lg border border-slate-200 overflow-hidden">
             <div class="px-4 py-3 border-b border-slate-100 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h2 class="text-sm font-semibold text-slate-900"><?php echo trans('status_for_week'); ?> <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></h2>
@@ -222,8 +222,8 @@ $totalPendingAll = max(0, $totalDueAll - $totalCollectedAll);
     </main>
 </div>
 
-<div id="updatePaymentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100">
+<div id="updatePaymentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl border border-slate-200">
         <form id="updatePaymentForm" action="<?php echo URL_ROOT; ?>/payments?week=<?php echo $selectedWeek; ?>&year=<?php echo $selectedYear; ?>" method="POST">
             <input type="hidden" name="action" value="process_payment_update">
             <input type="hidden" name="member_id" id="update_member_id">
@@ -256,9 +256,9 @@ $totalPendingAll = max(0, $totalDueAll - $totalCollectedAll);
                     </div>
                 </div>
             </div>
-            <div class="px-6 pb-6 flex justify-end gap-3 bg-slate-50 rounded-b-2xl">
-                <button type="button" onclick="closeModal('updatePaymentModal')" class="px-5 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-600 hover:bg-slate-100">Cancel</button>
-                <button type="submit" class="px-5 py-2.5 rounded-lg bg-slate-900 text-sm font-medium text-white shadow-sm hover:bg-slate-800">Save Update</button>
+            <div class="px-6 pb-6 flex justify-end gap-3 bg-slate-50 rounded-b-xl border-t border-slate-200">
+                <button type="button" onclick="closeModal('updatePaymentModal')" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors duration-200">Cancel</button>
+                <button type="submit" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-sm font-medium text-white shadow-md hover:shadow-lg transition-all duration-200">Save Update</button>
             </div>
         </form>
     </div>

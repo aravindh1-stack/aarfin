@@ -15,18 +15,18 @@ $groups = $pdo->query("SELECT id, group_name FROM `groups` ORDER BY group_name A
     <?php require_once APP_ROOT . '/templates/mobile_header.php'; ?>
     <?php require_once APP_ROOT . '/templates/sidebar.php'; ?>
 
-    <main class="flex-1 p-4 sm:p-6 bg-slate-100">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-slate-800"><?php echo trans('expense_management'); ?></h1>
+                <h1 class="text-2xl font-bold text-slate-900"><?php echo trans('expense_management'); ?></h1>
                 <p class="mt-1 text-sm text-slate-600"><?php echo trans('expense_management_desc'); ?></p>
             </div>
-            <button onclick="openAddExpenseModal()" class="mt-4 md:mt-0 w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white">
+            <button onclick="openAddExpenseModal()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg transition-all duration-200">
                 <i class="fas fa-plus"></i> <span><?php echo trans('add_expense'); ?></span>
             </button>
         </div>
 
-        <div class="bg-white rounded-lg border overflow-hidden">
+        <div class="rounded-xl bg-white shadow-lg border border-slate-200 overflow-hidden">
             <div class="md:hidden">
                 <?php foreach ($expenses as $expense): ?>
                 <div class="p-4 border-b">

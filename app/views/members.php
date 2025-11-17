@@ -61,17 +61,17 @@ $groups = $pdo->query("SELECT id, group_name FROM `groups` ORDER BY group_name A
     <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
 
         <!-- Top bar: connected to sidebar like a global header -->
-        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-3 lg:-mx-8 lg:px-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-5 lg:-mx-8 lg:px-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between shadow-sm">
             <div>
-                <h1 class="text-xl font-semibold tracking-tight text-slate-900 lg:text-2xl"><?php echo trans('member_management'); ?></h1>
-                <p class="mt-0.5 text-xs text-slate-500"><?php echo trans('member_management_desc'); ?></p>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('member_management'); ?></h1>
+                <p class="mt-1 text-sm text-slate-600"><?php echo trans('member_management_desc'); ?></p>
             </div>
             <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <div class="flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 min-w-[220px]">
                     <i class="fas fa-search text-slate-400 text-xs"></i>
                     <input type="text" placeholder="Search members..." class="ml-2 w-full border-none bg-transparent text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-0" />
                 </div>
-                <button onclick="openAddMemberModal()" class="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-medium text-white">
+                <button onclick="openAddMemberModal()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg transition-all duration-200">
                     <i class="fas fa-user-plus text-sm"></i>
                     <span><?php echo trans('add_new_member'); ?></span>
                 </button>
@@ -79,7 +79,7 @@ $groups = $pdo->query("SELECT id, group_name FROM `groups` ORDER BY group_name A
         </div>
 
         <!-- Members list -->
-        <div class="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
+        <div class="rounded-xl bg-white shadow-lg border border-slate-200 overflow-hidden">
             <div class="md:hidden">
                 <?php if (count($members) > 0): ?>
                     <?php foreach ($members as $member): ?>
@@ -161,8 +161,8 @@ $groups = $pdo->query("SELECT id, group_name FROM `groups` ORDER BY group_name A
     </main>
 </div>
 
-<div id="memberModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100">
+<div id="memberModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl border border-slate-200">
         <form id="memberForm" action="<?php echo URL_ROOT; ?>/members" method="POST">
             <input type="hidden" name="action" id="form_action">
             <input type="hidden" name="member_id" id="form_member_id">
@@ -179,16 +179,16 @@ $groups = $pdo->query("SELECT id, group_name FROM `groups` ORDER BY group_name A
                     <div id="status-field" class="hidden"><label class="block text-xs font-medium text-slate-600">Status</label><select id="form_status" name="status" class="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-slate-900 focus:ring-slate-900"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
                 </div>
             </div>
-            <div class="px-6 pb-6 flex justify-end gap-3 bg-slate-50 rounded-b-2xl">
-                <button type="button" onclick="closeModal('memberModal')" class="px-5 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-600 hover:bg-slate-100">Cancel</button>
-                <button type="submit" id="submitButton" class="px-5 py-2.5 rounded-lg bg-slate-900 text-sm font-medium text-white shadow-sm hover:bg-slate-800"></button>
+            <div class="px-6 pb-6 flex justify-end gap-3 bg-slate-50 rounded-b-xl border-t border-slate-200">
+                <button type="button" onclick="closeModal('memberModal')" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors duration-200">Cancel</button>
+                <button type="submit" id="submitButton" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-sm font-medium text-white shadow-md hover:shadow-lg transition-all duration-200"></button>
             </div>
         </form>
     </div>
 </div>
 
-<div id="deleteModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-    <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-100 p-6 text-center">
+<div id="deleteModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-white rounded-xl shadow-2xl border border-slate-200 p-6 text-center">
         <h3 class="text-base font-semibold text-slate-900">Delete Member</h3>
         <p id="deleteMessage" class="mt-2 text-sm text-slate-500">Are you sure?</p>
         <form action="<?php echo URL_ROOT; ?>/members" method="POST" class="mt-5">

@@ -15,26 +15,39 @@ function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toast-message');
     const toastIcon = document.getElementById('toast-icon');
+    const toastContainer = toast?.parentElement;
     if (!toast || !toastMessage || !toastIcon) return;
-    
+
     clearTimeout(toastTimeout);
     toastMessage.innerHTML = message;
 
     if (type === 'success') {
-        toastIcon.className = 'inline-flex items-center justify-center w-8 h-8 text-green-500 bg-green-100 rounded-lg';
-        toastIcon.innerHTML = '<i class="fas fa-check"></i>';
+        toastIcon.className = 'inline-flex items-center justify-center w-8 h-8 text-emerald-600 bg-emerald-100 rounded-full';
+        toastIcon.innerHTML = '<i class="fas fa-check text-sm"></i>';
+        toast.parentElement.classList.add('border-emerald-200', 'bg-emerald-50');
+    } else if (type === 'error') {
+        toastIcon.className = 'inline-flex items-center justify-center w-8 h-8 text-red-600 bg-red-100 rounded-full';
+        toastIcon.innerHTML = '<i class="fas fa-times text-sm"></i>';
+        toast.parentElement.classList.add('border-red-200', 'bg-red-50');
     } else {
-        toastIcon.className = 'inline-flex items-center justify-center w-8 h-8 text-red-500 bg-red-100 rounded-lg';
-        toastIcon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+        toastIcon.className = 'inline-flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-100 rounded-full';
+        toastIcon.innerHTML = '<i class="fas fa-info-circle text-sm"></i>';
+        toast.parentElement.classList.add('border-blue-200', 'bg-blue-50');
     }
-    
-    toast.classList.remove('translate-x-full', 'opacity-0');
+
+    toast.classList.remove('translate-x-[120%]', 'opacity-0');
     toastTimeout = setTimeout(hideToast, 5000);
 }
 
 function hideToast() {
     const toast = document.getElementById('toast');
-    if (toast) toast.classList.add('translate-x-full', 'opacity-0');
+    const toastContainer = toast?.parentElement;
+    if (toast) {
+        toast.classList.add('translate-x-[120%]', 'opacity-0');
+        setTimeout(() => {
+            toastContainer.classList.remove('border-emerald-200', 'bg-emerald-50', 'border-red-200', 'bg-red-50', 'border-blue-200', 'bg-blue-50');
+        }, 300);
+    }
 }
 
 // --- MEMBER-SPECIFIC MODAL FUNCTIONS ---
