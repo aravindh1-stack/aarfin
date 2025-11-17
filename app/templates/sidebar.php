@@ -3,12 +3,16 @@ $currentPage = $currentPage ?? '';
 ?>
 <aside
     id="sidebar"
-    class="bg-white h-screen w-64 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg z-50 border-r border-slate-200 flex flex-col"
+    class="bg-white h-screen w-64 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg z-50 border-r border-slate-200 flex flex-col"
 >
     <!-- Brand -->
-    <div class="flex items-center gap-4 px-6 py-6 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white">
-        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow-lg text-lg font-bold">
-            <?php echo strtoupper(substr(trans('app_name'), 0, 1)); ?>
+    <div class="flex items-center gap-4 px-6 py-5 bg-gradient-to-br from-slate-50 to-white">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white shadow-lg">
+            <img
+                src="<?php echo URL_ROOT; ?>/assets/image/logo/aarfin-logo.svg"
+                alt="<?php echo htmlspecialchars(trans('app_name')); ?> Logo"
+                class="h-10 w-10 object-contain"
+            >
         </div>
         <div class="flex flex-col min-w-0">
             <a href="<?php echo URL_ROOT; ?>/dashboard" class="text-sm font-semibold tracking-tight text-slate-900 truncate">

@@ -63,6 +63,13 @@ function openAddMemberModal() {
     
     document.getElementById('form_join_date').value = new Date().toISOString().slice(0, 10);
     document.getElementById('status-field').classList.add('hidden');
+
+    // Hide in-modal delete button in add mode
+    const editDeleteButton = document.getElementById('editDeleteButton');
+    if (editDeleteButton) {
+        editDeleteButton.classList.add('hidden');
+        editDeleteButton.onclick = null;
+    }
     
     showModal('memberModal');
 }
@@ -84,6 +91,16 @@ function openEditMemberModal(memberData) {
     document.getElementById('form_status').value = memberData.status;
     
     document.getElementById('status-field').classList.remove('hidden');
+
+    // Show and wire in-modal delete button for this member
+    const editDeleteButton = document.getElementById('editDeleteButton');
+    if (editDeleteButton) {
+        editDeleteButton.classList.remove('hidden');
+        editDeleteButton.onclick = function () {
+            closeModal('memberModal');
+            openDeleteMemberModal(memberData.id, memberData.name);
+        };
+    }
     showModal('memberModal');
 }
 
@@ -172,9 +189,9 @@ function openUpdatePaymentModal(memberData) {
 
 // Add an event listener to the whole document for payment update buttons
 document.addEventListener('click', function(event) {
-    // Check if a button with our class was clicked
-    if (event.target.classList.contains('js-update-payment-btn')) {
-        const button = event.target;
+    // Allow clicks on the button OR any child inside it
+    const button = event.target.closest('.js-update-payment-btn');
+    if (button) {
         // Create an object from the button's data attributes
         const memberData = {
             member_id: button.dataset.memberId,
@@ -191,8 +208,9 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// --- MOBILE SIDEBAR TOGGLE ---
+// --- MOBILE SIDEBAR TOGGLE + MEMBERS SEARCH FILTER ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Mobile sidebar toggle
     const menuButton = document.getElementById('mobile-menu-button');
     const sidebar = document.getElementById('sidebar');
 
@@ -200,5 +218,76 @@ document.addEventListener('DOMContentLoaded', () => {
         menuButton.addEventListener('click', () => {
             sidebar.classList.toggle('-translate-x-full');
         });
+    }
+
+    // Members page search filter
+    const memberSearchInput = document.getElementById('memberSearchInput');
+    if (memberSearchInput) {
+        const memberMobileCards = document.querySelectorAll('.js-member-card');
+        const memberDesktopRows = document.querySelectorAll('.js-member-row');
+
+        const applyMemberFilter = () => {
+            const q = memberSearchInput.value.trim().toLowerCase();
+
+            if (!q) {
+                memberMobileCards.forEach(card => card.classList.remove('hidden'));
+                memberDesktopRows.forEach(row => row.classList.remove('hidden'));
+                return;
+            }
+
+            const matches = (el) => {
+                const name = (el.getAttribute('data-name') || '').toLowerCase();
+                const uid = (el.getAttribute('data-uid') || '').toLowerCase();
+                const phone = (el.getAttribute('data-phone') || '').toLowerCase();
+                return name.includes(q) || uid.includes(q) || phone.includes(q);
+            };
+
+            memberMobileCards.forEach(card => {
+                if (matches(card)) card.classList.remove('hidden');
+                else card.classList.add('hidden');
+            });
+
+            memberDesktopRows.forEach(row => {
+                if (matches(row)) row.classList.remove('hidden');
+                else row.classList.add('hidden');
+            });
+        };
+
+        memberSearchInput.addEventListener('input', applyMemberFilter);
+    }
+
+    // Payments page search filter
+    const paymentSearchInput = document.getElementById('paymentSearchInput');
+    if (paymentSearchInput) {
+        const paymentMobileCards = document.querySelectorAll('.js-payment-card');
+        const paymentDesktopRows = document.querySelectorAll('.js-payment-row');
+
+        const applyPaymentFilter = () => {
+            const q = paymentSearchInput.value.trim().toLowerCase();
+
+            if (!q) {
+                paymentMobileCards.forEach(card => card.classList.remove('hidden'));
+                paymentDesktopRows.forEach(row => row.classList.remove('hidden'));
+                return;
+            }
+
+            const matches = (el) => {
+                const name = (el.getAttribute('data-name') || '').toLowerCase();
+                const phone = (el.getAttribute('data-phone') || '').toLowerCase();
+                return name.includes(q) || phone.includes(q);
+            };
+
+            paymentMobileCards.forEach(card => {
+                if (matches(card)) card.classList.remove('hidden');
+                else card.classList.add('hidden');
+            });
+
+            paymentDesktopRows.forEach(row => {
+                if (matches(row)) row.classList.remove('hidden');
+                else row.classList.add('hidden');
+            });
+        };
+
+        paymentSearchInput.addEventListener('input', applyPaymentFilter);
     }
 });

@@ -56,14 +56,14 @@ $projectStartDateFormatted = date('l, F d, Y', strtotime($projectStartDate));
     <?php require_once APP_ROOT . '/templates/mobile_header.php'; ?>
     <?php require_once APP_ROOT . '/templates/sidebar.php'; ?>
 
-    <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
+    <main class="flex-1 md:ml-64 px-4 pt-0 pb-20 lg:px-8 lg:pt-0 lg:pb-12 bg-slate-50">
         <!-- Top bar: connected to sidebar like a global header -->
-        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-5 lg:-mx-8 lg:px-8 flex flex-col gap-1 shadow-sm">
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('settings'); ?></h1>
-            <p class="text-sm text-slate-600"><?php echo trans('app_settings') ?? 'Manage how your app calculates and shows weekly data.'; ?></p>
+        <div class="-mx-4 mb-4 border-b border-slate-200 bg-white px-4 py-3 lg:py-4 lg:-mx-8 lg:px-8 flex flex-col gap-2 shadow-sm">
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('settings'); ?></h1>
+            <p class="text-xs md:text-sm text-slate-600"><?php echo trans('app_settings') ?? 'Manage how your app calculates and shows weekly data.'; ?></p>
         </div>
 
-        <div class="space-y-6 max-w-2xl">
+        <div class="space-y-6">
             <form action="<?php echo URL_ROOT; ?>/settings" method="POST" class="space-y-6">
 
                 <!-- Select Viewing Week -->

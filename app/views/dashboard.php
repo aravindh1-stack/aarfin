@@ -5,28 +5,63 @@ require_once APP_ROOT . '/templates/header.php';
 
 // --- Week/year come from global selection (Settings) ---
 [$currentWeek, $currentYear] = get_selected_week_and_year();
+
+// Build a per-member view for the selected week. Every active member is considered
+// pending until their payment for that week fully covers the due amount.
 $totalActiveMembers = $pdo->query("SELECT COUNT(*) FROM members WHERE status = 'Active'")->fetchColumn();
-$stmt = $pdo->prepare("SELECT SUM(amount_paid) FROM payments WHERE payment_week = ? AND payment_year = ? AND status IN ('Paid', 'Partial')");
-$stmt->execute([$currentWeek, $currentYear]);
-$weeklyCollection = $stmt->fetchColumn() ?? 0;
-$stmt = $pdo->prepare("SELECT SUM(amount - amount_paid) FROM payments WHERE payment_week = ? AND payment_year = ? AND status IN ('Pending', 'Partial')");
-$stmt->execute([$currentWeek, $currentYear]);
-$weeklyPendingAmount = $stmt->fetchColumn() ?? 0;
-$stmt = $pdo->prepare("SELECT COUNT(DISTINCT member_id) FROM payments WHERE payment_week = ? AND payment_year = ? AND status IN ('Pending', 'Partial')");
-$stmt->execute([$currentWeek, $currentYear]);
-$pendingMembersCount = $stmt->fetchColumn() ?? 0;
-// Derived stats for overview
-$weeklyTotalDue = (float)$weeklyCollection + (float)$weeklyPendingAmount;
-$collectionPercent = $weeklyTotalDue > 0 ? round(($weeklyCollection / $weeklyTotalDue) * 100) : 0;
-$pendingPercent = $weeklyTotalDue > 0 ? 100 - $collectionPercent : 0;
+
 $stmt = $pdo->prepare("
-    SELECT m.name, m.phone, p.amount, p.amount_paid 
-    FROM payments p JOIN members m ON p.member_id = m.id
-    WHERE p.payment_week = ? AND p.payment_year = ? AND p.status IN ('Pending', 'Partial')
+    SELECT
+        m.id AS member_id,
+        m.name,
+        m.phone,
+        m.contribution_amount,
+        p.id AS payment_id,
+        p.amount AS payment_amount,
+        p.amount_paid,
+        p.status
+    FROM members m
+    LEFT JOIN payments p
+        ON p.member_id = m.id
+        AND p.payment_week = ?
+        AND p.payment_year = ?
+    WHERE m.status = 'Active'
     ORDER BY m.name ASC
 ");
 $stmt->execute([$currentWeek, $currentYear]);
-$pendingMembersList = $stmt->fetchAll();
+$weeklyMembers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$weeklyTotalDue = 0;
+$weeklyCollection = 0;
+$weeklyPendingAmount = 0;
+$pendingMembersCount = 0;
+$pendingMembersList = [];
+
+foreach ($weeklyMembers as $row) {
+    $due = $row['payment_amount'] !== null ? (float)$row['payment_amount'] : (float)$row['contribution_amount'];
+    $paid = $row['amount_paid'] !== null ? (float)$row['amount_paid'] : 0.0;
+
+    $weeklyTotalDue += $due;
+    $weeklyCollection += $paid;
+
+    $balance = max(0, $due - $paid);
+    $weeklyPendingAmount += $balance;
+
+    if ($balance > 0) {
+        $pendingMembersCount++;
+        $pendingMembersList[] = [
+            'name' => $row['name'],
+            'phone' => $row['phone'],
+            'amount' => $due,
+            'amount_paid' => $paid,
+        ];
+    }
+}
+
+// Derived stats for overview
+$collectionPercent = $weeklyTotalDue > 0 ? round(($weeklyCollection / $weeklyTotalDue) * 100) : 0;
+$pendingPercent = $weeklyTotalDue > 0 ? 100 - $collectionPercent : 0;
+
 $recentPayments = $pdo->query("
     SELECT p.amount_paid, p.payment_date, m.name as member_name
     FROM payments p JOIN members m ON p.member_id = m.id
@@ -41,13 +76,13 @@ $recentPayments = $pdo->query("
 
 <?php require_once APP_ROOT . '/templates/sidebar.php'; ?>
 
-    <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
+    <main class="flex-1 md:ml-64 px-4 pt-0 pb-20 lg:px-8 lg:pt-0 lg:pb-8 bg-slate-50">
 
         <!-- Top bar: connected to sidebar like a global header -->
-        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-5 lg:-mx-8 lg:px-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between shadow-sm">
+        <div class="-mx-4 mb-4 border-b border-slate-200 bg-white px-4 py-3 lg:py-4 lg:-mx-8 lg:px-8 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between shadow-sm">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('dashboard'); ?></h1>
-                <p class="mt-1 text-sm text-slate-600">
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('dashboard'); ?></h1>
+                <p class="mt-1 text-xs md:text-sm text-slate-600">
                     <?php echo trans('dashboard_welcome'); ?>
                     <span class="font-semibold text-slate-900"><?php echo trans('week') . ' ' . $currentWeek . ', ' . $currentYear; ?></span>
                 </p>
@@ -230,13 +265,14 @@ $recentPayments = $pdo->query("
                         $memberPhone = htmlspecialchars($member['phone']);
                         $balance = (float)$member['amount'] - (float)$member['amount_paid'];
                         $balanceText = formatCurrency($balance);
-                        $encodedPhone = urlencode($member['phone']);
-                        $reminderText = rawurlencode("Hi $memberName, your weekly payment balance is $balanceText. Please pay as soon as possible. Thank you.");
+                        $waNumber = preg_replace('/\D+/', '', $member['phone']); // WhatsApp expects digits only with country code
+                        $rawMessage = "Hi $memberName, you have a pending payment for Week $currentWeek, $currentYear of $balanceText. Please pay as soon as possible. Thank you.";
+                        $reminderText = rawurlencode($rawMessage);
                     ?>
                     <div class="p-4 border-b border-slate-100">
                         <div class="flex justify-between items-start gap-3">
                             <div>
-                                <p class="text-sm font-semibold text-slate-900"><?php echo $memberName; ?></p>
+                                <p class="text-sm font-medium text-slate-900"><?php echo $memberName; ?></p>
                                 <p class="mt-0.5 text-xs text-slate-500"><?php echo $memberPhone; ?></p>
                             </div>
                             <p class="text-sm font-semibold text-rose-500">Balance: <?php echo $balanceText; ?></p>
@@ -246,7 +282,7 @@ $recentPayments = $pdo->query("
                                 <i class="fas fa-phone text-[0.65rem]"></i>
                                 <span>Call</span>
                             </a>
-                            <a href="https://wa.me/<?php echo $encodedPhone; ?>?text=<?php echo $reminderText; ?>" target="_blank" class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 font-medium text-green-600 hover:bg-green-100">
+                            <a href="https://wa.me/<?php echo $waNumber; ?>/?text=<?php echo $reminderText; ?>" target="_blank" class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 font-medium text-green-600 hover:bg-green-100">
                                 <i class="fab fa-whatsapp text-[0.75rem]"></i>
                                 <span>WhatsApp</span>
                             </a>
@@ -278,8 +314,9 @@ $recentPayments = $pdo->query("
                                 $memberPhone = htmlspecialchars($member['phone']);
                                 $balance = (float)$member['amount'] - (float)$member['amount_paid'];
                                 $balanceText = formatCurrency($balance);
-                                $encodedPhone = urlencode($member['phone']);
-                                $reminderText = rawurlencode("Hi $memberName, your weekly payment balance is $balanceText. Please pay as soon as possible. Thank you.");
+                                $waNumber = preg_replace('/\D+/', '', $member['phone']);
+                                $rawMessage = "Hi $memberName, you have a pending payment for Week $currentWeek, $currentYear of $balanceText. Please pay as soon as possible. Thank you.";
+                                $reminderText = rawurlencode($rawMessage);
                             ?>
                             <tr class="hover:bg-slate-50 align-top">
                                 <td class="py-3 pr-4">
@@ -290,7 +327,7 @@ $recentPayments = $pdo->query("
                                             <i class="fas fa-phone text-[0.65rem]"></i>
                                             <span>Call</span>
                                         </a>
-                                        <a href="https://wa.me/<?php echo $encodedPhone; ?>?text=<?php echo $reminderText; ?>" target="_blank" class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 font-medium text-green-600 hover:bg-green-100">
+                                        <a href="https://wa.me/<?php echo $waNumber; ?>/?text=<?php echo $reminderText; ?>" target="_blank" class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 font-medium text-green-600 hover:bg-green-100">
                                             <i class="fab fa-whatsapp text-[0.75rem]"></i>
                                             <span>WhatsApp</span>
                                         </a>

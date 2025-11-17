@@ -50,6 +50,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // --- FETCH DATA FOR DISPLAY ---
 $members = $pdo->query("SELECT m.*, g.group_name FROM members m JOIN `groups` g ON m.group_id = g.id ORDER BY m.name ASC")->fetchAll();
 $groups = $pdo->query("SELECT id, group_name FROM `groups` ORDER BY group_name ASC")->fetchAll();
+
+// Member summary stats
+$totalMembers = count($members);
+$activeMembers = 0;
+$inactiveMembers = 0;
+foreach ($members as $m) {
+    if (($m['status'] ?? '') === 'Active') {
+        $activeMembers++;
+    } elseif (($m['status'] ?? '') === 'Inactive') {
+        $inactiveMembers++;
+    }
+}
+
 ?>
 
 <div class="relative min-h-screen md:flex">
@@ -58,18 +71,18 @@ $groups = $pdo->query("SELECT id, group_name FROM `groups` ORDER BY group_name A
 
     <?php require_once APP_ROOT . '/templates/sidebar.php'; ?>
 
-    <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
+    <main class="flex-1 md:ml-64 px-4 pt-0 pb-20 lg:px-8 lg:pt-0 lg:pb-8 bg-slate-50">
 
         <!-- Top bar: connected to sidebar like a global header -->
-        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-5 lg:-mx-8 lg:px-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between shadow-sm">
+        <div class="-mx-4 mb-4 border-b border-slate-200 bg-white px-4 py-3 lg:py-4 lg:-mx-8 lg:px-8 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between shadow-sm">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('member_management'); ?></h1>
-                <p class="mt-1 text-sm text-slate-600"><?php echo trans('member_management_desc'); ?></p>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('member_management'); ?></h1>
+                <p class="mt-1 text-xs md:text-sm text-slate-600"><?php echo trans('member_management_desc'); ?></p>
             </div>
             <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <div class="flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 min-w-[220px]">
                     <i class="fas fa-search text-slate-400 text-xs"></i>
-                    <input type="text" placeholder="Search members..." class="ml-2 w-full border-none bg-transparent text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-0" />
+                    <input id="memberSearchInput" type="text" placeholder="Search members..." class="ml-2 w-full border-none bg-transparent text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-0" />
                 </div>
                 <button onclick="openAddMemberModal()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg transition-all duration-200">
                     <i class="fas fa-user-plus text-sm"></i>
@@ -78,74 +91,166 @@ $groups = $pdo->query("SELECT id, group_name FROM `groups` ORDER BY group_name A
             </div>
         </div>
 
-        <!-- Members list -->
+        <!-- Members list with attached summary header -->
         <div class="rounded-xl bg-white shadow-lg border border-slate-200 overflow-hidden">
-            <div class="md:hidden">
+            <!-- Summary header: three KPI cards like payments page -->
+            <div class="px-4 pt-4 pb-5 border-b border-slate-100 bg-slate-50/40">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <div class="relative overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-slate-200">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500"><?php echo trans('members') ?? 'Members'; ?></p>
+                        <p class="mt-2 text-2xl font-bold text-slate-900"><?php echo $totalMembers; ?></p>
+                    </div>
+                    <div class="relative overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-emerald-200">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-emerald-600"><?php echo trans('active_members') ?? 'Active'; ?></p>
+                        <p class="mt-2 text-2xl font-bold text-emerald-600"><?php echo $activeMembers; ?></p>
+                    </div>
+                    <div class="relative overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-amber-200">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-amber-600"><?php echo trans('inactive') ?? 'Inactive'; ?></p>
+                        <p class="mt-2 text-2xl font-bold text-amber-600"><?php echo $inactiveMembers; ?></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile cards (compact: name + UID + edit, tap to open details) -->
+            <div class="md:hidden p-3 space-y-3 bg-slate-50/60" id="memberMobileList">
                 <?php if (count($members) > 0): ?>
                     <?php foreach ($members as $member): ?>
-                    <div class="p-4 border-b border-slate-100">
-                        <div class="flex justify-between items-start gap-3">
-                            <div>
-                                <p class="font-medium text-slate-900"><?php echo htmlspecialchars($member['name']); ?></p>
-                                <p class="text-xs text-slate-400 font-mono"><?php echo htmlspecialchars($member['member_uid']); ?></p>
-                                <p class="text-sm text-slate-500 mt-1"><i class="fas fa-phone-alt fa-xs mr-1"></i><?php echo htmlspecialchars($member['phone']); ?></p>
+                    <div
+                        class="rounded-2xl bg-white p-3 shadow-sm border border-slate-100 js-member-card"
+                        data-name="<?php echo htmlspecialchars(strtolower($member['name'])); ?>"
+                        data-uid="<?php echo htmlspecialchars(strtolower($member['member_uid'])); ?>"
+                        data-phone="<?php echo htmlspecialchars(strtolower($member['phone'])); ?>"
+                    >
+                        <button
+                            type="button"
+                            onclick='openEditMemberModal(<?php echo json_encode($member); ?>)'
+                            class="w-full text-left flex items-center justify-between gap-3"
+                        >
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 text-sm font-semibold">
+                                    <?php echo strtoupper(substr($member['name'], 0, 1)); ?>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-medium text-slate-900 truncate"><?php echo htmlspecialchars($member['name']); ?></p>
+                                    <p class="text-[0.7rem] text-slate-400 font-mono mt-0.5">#<?php echo htmlspecialchars($member['member_uid']); ?></p>
+                                </div>
                             </div>
-                            <div class="flex-shrink-0 flex items-center gap-1">
-                                <button onclick='openEditMemberModal(<?php echo json_encode($member); ?>)' class="inline-flex h-8 w-8 items-center justify-center rounded-full text-blue-600 hover:bg-blue-50">
-                                    <i class="fas fa-edit text-xs"></i>
-                                </button>
-                                <button onclick='openDeleteMemberModal(<?php echo $member["id"]; ?>, "<?php echo htmlspecialchars(addslashes($member["name"])); ?>")' class="inline-flex h-8 w-8 items-center justify-center rounded-full text-rose-600 hover:bg-rose-50">
-                                    <i class="fas fa-trash-alt text-xs"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="mt-2 flex justify-between items-center">
-                            <div>
-                                <p class="text-sm font-semibold text-slate-900"><?php echo formatCurrency($member['contribution_amount']); ?></p>
-                                <p class="text-xs text-slate-500"><?php echo htmlspecialchars($member['group_name']); ?></p>
-                            </div>
-                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full <?php echo $member['status'] === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'; ?>"><?php echo trans(strtolower($member['status'])); ?></span>
-                        </div>
+                            <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[0.7rem] font-medium text-slate-700">
+                                <i class="fas fa-pen text-[0.6rem]"></i>
+                                <span><?php echo trans('edit') ?? 'Edit'; ?></span>
+                            </span>
+                        </button>
                     </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <div class="p-10 text-center text-sm text-slate-500"><?php echo trans('no_members_found'); ?></div>
+                    <div class="p-8 text-center text-sm text-slate-500 bg-white rounded-2xl border border-dashed border-slate-200"><?php echo trans('no_members_found'); ?></div>
                 <?php endif; ?>
             </div>
 
             <div class="hidden md:block overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-slate-50">
+                <table class="min-w-full text-sm align-middle">
+                    <thead class="bg-slate-50/80 border-b border-slate-200">
                         <tr>
-                            <th class="px-6 py-3 text-left text-[0.68rem] font-semibold tracking-wide text-slate-500 uppercase"><?php echo trans('name_uid'); ?></th>
-                            <th class="px-6 py-3 text-left text-[0.68rem] font-semibold tracking-wide text-slate-500 uppercase"><?php echo trans('contribution'); ?></th>
-                            <th class="px-6 py-3 text-left text-[0.68rem] font-semibold tracking-wide text-slate-500 uppercase"><?php echo trans('status'); ?></th>
-                            <th class="relative px-6 py-3 text-right text-[0.68rem] font-semibold tracking-wide text-slate-500 uppercase"><?php echo trans('actions') ?? 'Actions'; ?></th>
+                            <th class="px-6 py-3 text-left text-[0.7rem] font-semibold tracking-wide text-slate-500 uppercase">
+                                <div class="inline-flex items-center gap-2">
+                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-blue-500 text-xs">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-[0.7rem] font-semibold tracking-wide text-slate-500 uppercase">
+                                <div class="inline-flex items-center gap-2">
+                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 text-xs">
+                                        <i class="fas fa-indian-rupee-sign"></i>
+                                    </span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-[0.7rem] font-semibold tracking-wide text-slate-500 uppercase">
+                                <div class="inline-flex items-center gap-2">
+                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-white text-[0.6rem]">
+                                        <i class="fas fa-signal"></i>
+                                    </span>
+                                </div>
+                            </th>
+                            <th class="relative px-6 py-3 text-right text-[0.7rem] font-semibold tracking-wide text-slate-500 uppercase">
+                                <div class="inline-flex items-center justify-end gap-2 w-full">
+                                    <span class="leading-tight"><?php echo trans('actions') ?? 'Actions'; ?></span>
+                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-slate-500 text-xs">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-slate-100">
+                    <tbody class="bg-white divide-y divide-slate-100" id="memberDesktopTableBody">
                          <?php if (count($members) > 0): ?>
                             <?php foreach ($members as $member): ?>
-                            <tr class="hover:bg-slate-50">
-                                <td class="px-6 py-4 align-top">
-                                    <p class="text-sm font-semibold text-slate-900"><?php echo htmlspecialchars($member['name']); ?></p>
-                                    <p class="text-[0.7rem] text-slate-400 font-mono mt-0.5"><?php echo htmlspecialchars($member['member_uid']); ?></p>
-                                    <p class="text-xs text-slate-500 mt-1"><i class="fas fa-phone-alt fa-xs mr-1"></i><?php echo htmlspecialchars($member['phone']); ?></p>
+                            <tr
+                                class="hover:bg-slate-50 js-member-row"
+                                data-name="<?php echo htmlspecialchars(strtolower($member['name'])); ?>"
+                                data-uid="<?php echo htmlspecialchars(strtolower($member['member_uid'])); ?>"
+                                data-phone="<?php echo htmlspecialchars(strtolower($member['phone'])); ?>"
+                            >
+                                <!-- Name / UID / phone -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 text-sm font-semibold">
+                                            <?php echo strtoupper(substr($member['name'], 0, 1)); ?>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-semibold text-slate-900 truncate"><?php echo htmlspecialchars($member['name']); ?></p>
+                                            <p class="text-[0.7rem] text-slate-400 font-mono mt-0.5">#<?php echo htmlspecialchars($member['member_uid']); ?></p>
+                                            <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                                <i class="fas fa-phone-alt fa-xs"></i>
+                                                <span class="truncate"><?php echo htmlspecialchars($member['phone']); ?></span>
+                                            </p>
+                                        </div>
+                                    </div>
                                 </td>
+
+                                <!-- Contribution / group -->
                                 <td class="px-6 py-4 align-top">
-                                    <p class="text-sm font-semibold text-slate-900"><?php echo formatCurrency($member['contribution_amount']); ?></p>
-                                    <p class="text-xs text-slate-500 mt-0.5"><?php echo htmlspecialchars($member['group_name']); ?></p>
+                                    <p class="text-sm font-semibold text-slate-900 flex items-center gap-1">
+                                        <span class="inline-flex h-6 min-w-[3rem] items-center justify-center rounded-full bg-emerald-50 px-2 text-xs font-semibold text-emerald-700">
+                                            <?php echo formatCurrency($member['contribution_amount']); ?>
+                                        </span>
+                                    </p>
+                                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <i class="fas fa-layer-group fa-xs"></i>
+                                        <span><?php echo htmlspecialchars($member['group_name']); ?></span>
+                                    </p>
                                 </td>
+
+                                <!-- Status -->
                                 <td class="px-6 py-4 align-top">
-                                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full <?php echo $member['status'] === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'; ?>"><?php echo $member['status']; ?></span>
+                                    <?php
+                                        $isActive = ($member['status'] === 'Active');
+                                        $statusClasses = $isActive
+                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                            : 'bg-rose-50 text-rose-700 border border-rose-100';
+                                        $statusIcon = $isActive ? 'fa-check-circle' : 'fa-exclamation-circle';
+                                    ?>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full <?php echo $statusClasses; ?>">
+                                        <i class="fas <?php echo $statusIcon; ?> text-[0.65rem]"></i>
+                                        <span><?php echo $member['status']; ?></span>
+                                    </span>
                                 </td>
+
+                                <!-- Actions -->
                                 <td class="px-6 py-4 text-right align-top">
-                                    <div class="inline-flex items-center gap-1">
-                                        <button onclick='openEditMemberModal(<?php echo json_encode($member); ?>)' class="inline-flex h-8 w-8 items-center justify-center rounded-full text-blue-600 hover:bg-blue-50">
-                                            <i class="fas fa-edit text-xs"></i>
+                                    <div class="inline-flex items-center gap-2">
+                                        <button
+                                            onclick='openEditMemberModal(<?php echo json_encode($member); ?>)'
+                                            class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 transition-colors duration-150"
+                                        >
+                                            <i class="fas fa-pen text-[0.65rem]"></i>
+                                            <span><?php echo trans('edit') ?? 'Edit'; ?></span>
                                         </button>
-                                        <button onclick='openDeleteMemberModal(<?php echo $member["id"]; ?>, "<?php echo htmlspecialchars(addslashes($member["name"])); ?>")' class="inline-flex h-8 w-8 items-center justify-center rounded-full text-rose-600 hover:bg-rose-50">
-                                            <i class="fas fa-trash-alt text-xs"></i>
+                                        <button
+                                            onclick='openDeleteMemberModal(<?php echo $member["id"]; ?>, "<?php echo htmlspecialchars(addslashes($member["name"])); ?>")'
+                                            class="inline-flex items-center justify-center h-8 w-8 rounded-full border border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:border-rose-200 text-xs transition-colors duration-150"
+                                        >
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -179,11 +284,23 @@ $groups = $pdo->query("SELECT id, group_name FROM `groups` ORDER BY group_name A
                     <div id="status-field" class="hidden"><label class="block text-xs font-medium text-slate-600">Status</label><select id="form_status" name="status" class="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-slate-900 focus:ring-slate-900"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
                 </div>
             </div>
-            <div class="px-6 pb-6 flex justify-end gap-3 bg-slate-50 rounded-b-xl border-t border-slate-200">
-                <button type="button" onclick="closeModal('memberModal')" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors duration-200">Cancel</button>
-                <button type="submit" id="submitButton" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-sm font-medium text-white shadow-md hover:shadow-lg transition-all duration-200"></button>
+            <div class="px-6 pb-6 flex items-center justify-between gap-3 bg-slate-50 rounded-b-xl border-t border-slate-200">
+                <button
+                    type="button"
+                    id="editDeleteButton"
+                    class="hidden px-4 py-2.5 rounded-lg border border-rose-200 bg-rose-50 text-xs font-medium text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-colors duration-200"
+                >
+                    <i class="fas fa-trash-alt text-[0.65rem] mr-1"></i>
+                    <?php echo trans('delete') ?? 'Delete'; ?>
+                </button>
+
+                <div class="ml-auto flex items-center gap-3">
+                    <button type="button" onclick="closeModal('memberModal')" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors duration-200">Cancel</button>
+                    <button type="submit" id="submitButton" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-sm font-medium text-white shadow-md hover:shadow-lg transition-all duration-200"></button>
+                </div>
             </div>
         </form>
+
     </div>
 </div>
 

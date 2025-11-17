@@ -58,159 +58,207 @@ $totalPendingAll = max(0, $totalDueAll - $totalCollectedAll);
     <?php require_once APP_ROOT . '/templates/mobile_header.php'; ?>
     <?php require_once APP_ROOT . '/templates/sidebar.php'; ?>
 
-    <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
+    <main class="flex-1 md:ml-64 px-4 pt-0 pb-20 lg:px-8 lg:pt-0 lg:pb-8 bg-slate-50">
 
         <!-- Top bar: connected to sidebar like a global header -->
-        <div class="-mx-4 -mt-2 mb-8 border-b border-slate-200 bg-white px-4 py-5 lg:-mx-8 lg:px-8 flex flex-col gap-1 shadow-sm">
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('weekly_payment_status'); ?></h1>
-            <p class="text-sm text-slate-600"><?php echo trans('status_for_week'); ?> <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></p>
+        <div class="-mx-4 mb-8 border-b border-slate-200 bg-white px-4 py-4 lg:py-5 lg:-mx-8 lg:px-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between shadow-sm">
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('weekly_payment_status'); ?></h1>
+                <p class="text-xs md:text-sm text-slate-600"><?php echo trans('status_for_week'); ?> <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></p>
+            </div>
+            <div class="flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 min-w-[220px] max-w-xs">
+                <i class="fas fa-search text-slate-400 text-xs"></i>
+                <input id="paymentSearchInput" type="text" placeholder="Search payments..." class="ml-2 w-full border-none bg-transparent text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-0" />
+            </div>
         </div>
 
         <!-- Payments list -->
         <div class="rounded-xl bg-white shadow-lg border border-slate-200 overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-100 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                    <h2 class="text-sm font-semibold text-slate-900"><?php echo trans('status_for_week'); ?> <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></h2>
-                    <p class="text-[0.7rem] text-slate-500 mt-0.5"><?php echo trans('active_members'); ?>: <?php echo count($membersList); ?></p>
-                </div>
-                <div class="grid grid-cols-1 gap-2 text-[0.75rem] sm:grid-cols-3"> 
-                    <div class="rounded-xl bg-slate-50 px-3 py-2 border border-slate-100">
-                        <p class="text-[0.7rem] font-medium text-slate-500"><?php echo trans('total_due') ?? 'Total Due'; ?></p>
-                        <p class="text-sm font-semibold text-slate-900"><?php echo formatCurrency($totalDueAll); ?></p>
+            <!-- Summary header: three KPI cards like members page -->
+            <div class="px-4 pt-4 pb-5 border-b border-slate-100 bg-slate-50/40">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <div class="relative overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-slate-200">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500"><?php echo trans('total_due') ?? 'Total Due'; ?></p>
+                        <p class="mt-2 text-2xl font-bold text-slate-900"><?php echo formatCurrency($totalDueAll); ?></p>
                     </div>
-                    <div class="rounded-xl bg-emerald-50 px-3 py-2 border border-emerald-100">
-                        <p class="text-[0.7rem] font-medium text-emerald-600"><?php echo trans('total_collected') ?? 'Total Collected'; ?></p>
-                        <p class="text-sm font-semibold text-emerald-700"><?php echo formatCurrency($totalCollectedAll); ?></p>
+                    <div class="relative overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-emerald-200">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-emerald-600"><?php echo trans('total_collected') ?? 'Total Collected'; ?></p>
+                        <p class="mt-2 text-2xl font-bold text-emerald-600"><?php echo formatCurrency($totalCollectedAll); ?></p>
                     </div>
-                    <div class="rounded-xl bg-rose-50 px-3 py-2 border border-rose-100">
-                        <p class="text-[0.7rem] font-medium text-rose-600"><?php echo trans('total_pending') ?? 'Total Pending'; ?></p>
-                        <p class="text-sm font-semibold text-rose-700"><?php echo formatCurrency($totalPendingAll); ?></p>
+                    <div class="relative overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-rose-200">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-rose-600"><?php echo trans('total_pending') ?? 'Total Pending'; ?></p>
+                        <p class="mt-2 text-2xl font-bold text-rose-600"><?php echo formatCurrency($totalPendingAll); ?></p>
                     </div>
                 </div>
             </div>
 
-            <!-- Mobile cards -->
-            <div class="md:hidden">
+            <!-- Mobile cards: compact view, tap to open update modal -->
+            <div class="md:hidden p-3 space-y-3 bg-slate-50/60" id="paymentMobileList">
                 <?php foreach ($membersList as $member): 
                     $totalDue = $member['total_due'] ?? $member['contribution_amount'];
                     $amountPaid = $member['amount_paid'] ?? 0;
                     $status = $member['payment_status'] ?? 'Pending';
-                    $statusClass = 'bg-orange-100 text-orange-700';
-                    if ($status === 'Paid') { $statusClass = 'bg-green-100 text-green-800'; }
-                    if ($status === 'Partial') { $statusClass = 'bg-blue-100 text-blue-800'; }
-                    $balance = max(0, (float)$totalDue - (float)$amountPaid);
-                    $balanceText = formatCurrency($balance);
-                    $memberPhone = htmlspecialchars($member['phone'] ?? '');
-                    $encodedPhone = urlencode($member['phone'] ?? '');
-                    $reminderText = rawurlencode("Hi " . $member['member_name'] . ", your weekly payment balance is " . $balanceText . ". Please pay as soon as possible. Thank you.");
                 ?>
-                <div class="p-4 border-b border-slate-100">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="text-sm font-semibold text-slate-900"><?php echo htmlspecialchars($member['member_name']); ?></p>
-                            <p class="text-xs text-slate-500 mt-0.5"><?php echo trans('week'); ?> <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></p>
-                            <?php if (!empty($memberPhone)): ?>
-                                <p class="text-xs text-slate-500 mt-0.5"><i class="fas fa-phone-alt fa-xs mr-1"></i><?php echo $memberPhone; ?></p>
-                            <?php endif; ?>
+                <div
+                    class="rounded-2xl bg-white p-3 shadow-sm border border-slate-100 js-payment-card"
+                    data-name="<?php echo htmlspecialchars(strtolower($member['member_name'])); ?>"
+                    data-phone="<?php echo htmlspecialchars(strtolower($member['phone'])); ?>"
+                >
+                    <button
+                        type="button"
+                        class="js-update-payment-btn w-full text-left flex items-center justify-between gap-3"
+                        data-member-id="<?php echo $member['member_id']; ?>"
+                        data-member-name="<?php echo htmlspecialchars($member['member_name']); ?>"
+                        data-contribution-amount="<?php echo $member['contribution_amount']; ?>"
+                        data-payment-id="<?php echo $member['payment_id'] ?? ''; ?>"
+                        data-total-due="<?php echo $totalDue; ?>"
+                        data-amount-paid="<?php echo $amountPaid; ?>"
+                        data-notes="<?php echo htmlspecialchars($member['notes'] ?? ''); ?>"
+                        data-status="<?php echo $status; ?>"
+                    >
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 text-sm font-semibold">
+                                <?php echo strtoupper(substr($member['member_name'], 0, 1)); ?>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-slate-900 truncate"><?php echo htmlspecialchars($member['member_name']); ?></p>
+                                <p class="text-[0.7rem] text-slate-500 mt-0.5">
+                                    <?php echo trans('week'); ?> <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?>
+                                </p>
+                            </div>
                         </div>
-                        <button type="button" class="js-update-payment-btn inline-flex items-center gap-1 text-xs font-medium text-blue-600 px-3 py-1.5 rounded-full border border-blue-100 bg-blue-50 hover:bg-blue-100"
-                            data-member-id="<?php echo $member['member_id']; ?>" data-member-name="<?php echo htmlspecialchars($member['member_name']); ?>"
-                            data-contribution-amount="<?php echo $member['contribution_amount']; ?>" data-payment-id="<?php echo $member['payment_id'] ?? ''; ?>"
-                            data-total-due="<?php echo $totalDue; ?>" data-amount-paid="<?php echo $amountPaid; ?>"
-                            data-notes="<?php echo htmlspecialchars($member['notes'] ?? ''); ?>" data-status="<?php echo $status; ?>">
+                        <span class="inline-flex items-center gap-1 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[0.7rem] font-medium text-blue-700">
                             <i class="fas fa-pen text-[0.65rem]"></i>
                             <span><?php echo trans('update') ?? 'Update'; ?></span>
-                        </button>
-                    </div>
-                    <div class="mt-2 flex justify-between items-center">
-                        <div>
-                            <span class="text-sm font-semibold text-slate-900"><?php echo formatCurrency($amountPaid); ?></span>
-                            <span class="text-xs text-slate-500">/ <?php echo formatCurrency($totalDue); ?></span>
-                        </div>
-                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full <?php echo $statusClass; ?>"><?php echo $status; ?></span>
-                    </div>
-                    <?php if ($status !== 'Paid' && !empty($memberPhone) && $balance > 0): ?>
-                    <div class="mt-3 flex flex-wrap gap-1.5 text-[0.7rem]">
-                        <a href="tel:<?php echo $memberPhone; ?>" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-600 hover:bg-emerald-100">
-                            <i class="fas fa-phone text-[0.65rem]"></i>
-                            <span>Call</span>
-                        </a>
-                        <a href="https://wa.me/<?php echo $encodedPhone; ?>?text=<?php echo $reminderText; ?>" target="_blank" class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 font-medium text-green-600 hover:bg-green-100">
-                            <i class="fab fa-whatsapp text-[0.75rem]"></i>
-                            <span>WhatsApp</span>
-                        </a>
-                        <a href="sms:<?php echo $memberPhone; ?>?body=<?php echo $reminderText; ?>" class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 font-medium text-sky-600 hover:bg-sky-100">
-                            <i class="fas fa-comment-dots text-[0.65rem]"></i>
-                            <span>SMS</span>
-                        </a>
-                    </div>
-                    <?php endif; ?>
+                        </span>
+                    </button>
                 </div>
                 <?php endforeach; ?>
             </div>
+
             <!-- Desktop table -->
             <div class="hidden md:block overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-slate-50">
+                <table class="min-w-full text-sm align-middle">
+                    <thead class="bg-slate-50/80 border-b border-slate-200">
                         <tr>
-                            <th class="px-6 py-3 text-left text-[0.68rem] font-semibold tracking-wide text-slate-500 uppercase"><?php echo trans('member'); ?></th>
-                            <th class="px-6 py-3 text-left text-[0.68rem] font-semibold tracking-wide text-slate-500 uppercase"><?php echo trans('amount'); ?></th>
-                            <th class="px-6 py-3 text-left text-[0.68rem] font-semibold tracking-wide text-slate-500 uppercase"><?php echo trans('status'); ?></th>
-                            <th class="px-6 py-3 text-right text-[0.68rem] font-semibold tracking-wide text-slate-500 uppercase"><?php echo trans('actions'); ?></th>
+                            <th class="px-6 py-3 text-left text-[0.7rem] font-semibold tracking-wide text-slate-500 uppercase">
+                                <div class="inline-flex items-center gap-2">
+                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-blue-500 text-xs">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <span class="leading-tight"><?php echo trans('member'); ?></span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-[0.7rem] font-semibold tracking-wide text-slate-500 uppercase">
+                                <div class="inline-flex items-center gap-2">
+                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 text-xs">
+                                        <i class="fas fa-indian-rupee-sign"></i>
+                                    </span>
+                                    <span class="leading-tight"><?php echo trans('amount'); ?></span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-left text-[0.7rem] font-semibold tracking-wide text-slate-500 uppercase">
+                                <div class="inline-flex items-center gap-2">
+                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-white text-[0.6rem]">
+                                        <i class="fas fa-signal"></i>
+                                    </span>
+                                    <span class="leading-tight"><?php echo trans('status'); ?></span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-right text-[0.7rem] font-semibold tracking-wide text-slate-500 uppercase">
+                                <div class="inline-flex items-center justify-end gap-2 w-full">
+                                    <span class="leading-tight"><?php echo trans('actions'); ?></span>
+                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-slate-500 text-xs">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-slate-100">
+                    <tbody class="bg-white divide-y divide-slate-100" id="paymentDesktopTableBody">
                         <?php foreach ($membersList as $member):
                             $totalDue = $member['total_due'] ?? $member['contribution_amount'];
                             $amountPaid = $member['amount_paid'] ?? 0;
                             $status = $member['payment_status'] ?? 'Pending';
-                            $statusClass = 'bg-orange-100 text-orange-700';
-                            if ($status === 'Paid') { $statusClass = 'bg-green-100 text-green-800'; }
-                            if ($status === 'Partial') { $statusClass = 'bg-blue-100 text-blue-800'; }
+                            $statusClass = 'bg-orange-50 text-orange-700 border border-orange-100';
+                            if ($status === 'Paid') { $statusClass = 'bg-emerald-50 text-emerald-700 border border-emerald-100'; }
+                            if ($status === 'Partial') { $statusClass = 'bg-blue-50 text-blue-700 border border-blue-100'; }
                             $balance = max(0, (float)$totalDue - (float)$amountPaid);
                             $balanceText = formatCurrency($balance);
                             $memberPhone = htmlspecialchars($member['phone'] ?? '');
                             $encodedPhone = urlencode($member['phone'] ?? '');
                             $reminderText = rawurlencode("Hi " . $member['member_name'] . ", your weekly payment balance is " . $balanceText . ". Please pay as soon as possible. Thank you.");
                         ?>
-                        <tr class="hover:bg-slate-50">
+                        <tr
+                            class="hover:bg-slate-50 js-payment-row"
+                            data-name="<?php echo htmlspecialchars(strtolower($member['member_name'])); ?>"
+                            data-phone="<?php echo htmlspecialchars(strtolower($member['phone'])); ?>"
+                        >
+                            <!-- Member / week / contact -->
                             <td class="px-6 py-4 align-top">
-                                <p class="text-sm font-semibold text-slate-900"><?php echo htmlspecialchars($member['member_name']); ?></p>
-                                <p class="text-[0.7rem] text-slate-400 mt-0.5"><?php echo trans('week'); ?> <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></p>
-                                <?php if (!empty($memberPhone)): ?>
-                                    <p class="text-[0.7rem] text-slate-500 mt-0.5"><i class="fas fa-phone-alt fa-xs mr-1"></i><?php echo $memberPhone; ?></p>
-                                <?php endif; ?>
-                                <?php if ($status !== 'Paid' && !empty($memberPhone) && $balance > 0): ?>
-                                    <div class="mt-2 flex flex-wrap gap-1.5 text-[0.7rem]">
-                                        <a href="tel:<?php echo $memberPhone; ?>" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-600 hover:bg-emerald-100">
-                                            <i class="fas fa-phone text-[0.65rem]"></i>
-                                            <span>Call</span>
-                                        </a>
-                                        <a href="https://wa.me/<?php echo $encodedPhone; ?>?text=<?php echo $reminderText; ?>" target="_blank" class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 font-medium text-green-600 hover:bg-green-100">
-                                            <i class="fab fa-whatsapp text-[0.75rem]"></i>
-                                            <span>WhatsApp</span>
-                                        </a>
-                                        <a href="sms:<?php echo $memberPhone; ?>?body=<?php echo $reminderText; ?>" class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 font-medium text-sky-600 hover:bg-sky-100">
-                                            <i class="fas fa-comment-dots text-[0.65rem]"></i>
-                                            <span>SMS</span>
-                                        </a>
+                                <div class="flex items-start gap-3">
+                                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 text-sm font-semibold">
+                                        <?php echo strtoupper(substr($member['member_name'], 0, 1)); ?>
                                     </div>
-                                <?php endif; ?>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-semibold text-slate-900 truncate"><?php echo htmlspecialchars($member['member_name']); ?></p>
+                                        <p class="text-[0.7rem] text-slate-400 mt-0.5"><?php echo trans('week'); ?> <?php echo $selectedWeek; ?>, <?php echo $selectedYear; ?></p>
+                                        <?php if (!empty($memberPhone)): ?>
+                                            <p class="text-[0.7rem] text-slate-500 mt-1 flex items-center gap-1">
+                                                <i class="fas fa-phone-alt fa-xs"></i>
+                                                <span class="truncate"><?php echo $memberPhone; ?></span>
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                             </td>
+
+                            <!-- Amount paid / due -->
                             <td class="px-6 py-4 align-top">
-                                <span class="text-sm font-semibold text-slate-900"><?php echo formatCurrency($amountPaid); ?></span>
-                                <span class="ml-1 text-xs text-slate-500">/ <?php echo formatCurrency($totalDue); ?></span>
+                                <div class="flex flex-col gap-1">
+                                    <div class="inline-flex items-center gap-1">
+                                        <span class="inline-flex h-6 items-center rounded-full bg-emerald-50 px-2 text-xs font-semibold text-emerald-700">
+                                            <?php echo formatCurrency($amountPaid); ?>
+                                        </span>
+                                        <span class="text-[0.7rem] text-slate-500">/ <?php echo formatCurrency($totalDue); ?></span>
+                                    </div>
+                                    <?php if ($balance > 0): ?>
+                                        <p class="text-[0.7rem] text-slate-500">
+                                            <?php echo trans('total_pending') ?? 'Pending'; ?>: <span class="font-semibold text-amber-600"><?php echo $balanceText; ?></span>
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
                             </td>
+
+                            <!-- Status -->
                             <td class="px-6 py-4 align-top">
-                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full <?php echo $statusClass; ?>"><?php echo $status; ?></span>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full <?php echo $statusClass; ?>">
+                                    <?php
+                                        $statusIcon = 'fa-hourglass-half';
+                                        if ($status === 'Paid') $statusIcon = 'fa-check-circle';
+                                        if ($status === 'Partial') $statusIcon = 'fa-adjust';
+                                    ?>
+                                    <i class="fas <?php echo $statusIcon; ?> text-[0.65rem]"></i>
+                                    <span><?php echo $status; ?></span>
+                                </span>
                             </td>
+
+                            <!-- Actions -->
                             <td class="px-6 py-4 text-right align-top">
-                                <button type="button" class="js-update-payment-btn inline-flex h-8 w-8 items-center justify-center rounded-full text-blue-600 hover:bg-blue-50"
-                                    data-member-id="<?php echo $member['member_id']; ?>" data-member-name="<?php echo htmlspecialchars($member['member_name']); ?>"
-                                    data-contribution-amount="<?php echo $member['contribution_amount']; ?>" data-payment-id="<?php echo $member['payment_id'] ?? ''; ?>"
-                                    data-total-due="<?php echo $totalDue; ?>" data-amount-paid="<?php echo $amountPaid; ?>"
-                                    data-notes="<?php echo htmlspecialchars($member['notes'] ?? ''); ?>" data-status="<?php echo $status; ?>">
-                                    <i class="fas fa-pen text-xs"></i>
+                                <button
+                                    type="button"
+                                    class="js-update-payment-btn inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 transition-colors duration-150"
+                                    data-member-id="<?php echo $member['member_id']; ?>"
+                                    data-member-name="<?php echo htmlspecialchars($member['member_name']); ?>"
+                                    data-contribution-amount="<?php echo $member['contribution_amount']; ?>"
+                                    data-payment-id="<?php echo $member['payment_id'] ?? ''; ?>"
+                                    data-total-due="<?php echo $totalDue; ?>"
+                                    data-amount-paid="<?php echo $amountPaid; ?>"
+                                    data-notes="<?php echo htmlspecialchars($member['notes'] ?? ''); ?>"
+                                    data-status="<?php echo $status; ?>"
+                                >
+                                    <i class="fas fa-pen text-[0.65rem]"></i>
+                                    <span><?php echo trans('update') ?? 'Update'; ?></span>
                                 </button>
                             </td>
                         </tr>

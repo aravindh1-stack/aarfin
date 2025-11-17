@@ -15,18 +15,23 @@ $groups = $pdo->query("SELECT id, group_name FROM `groups` ORDER BY group_name A
     <?php require_once APP_ROOT . '/templates/mobile_header.php'; ?>
     <?php require_once APP_ROOT . '/templates/sidebar.php'; ?>
 
-    <main class="flex-1 px-4 py-6 lg:px-8 lg:py-8 bg-slate-50">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+    <main class="flex-1 md:ml-64 px-4 pt-0 pb-20 lg:px-8 lg:pt-0 lg:pb-8 bg-slate-50">
+
+        <!-- Top bar: connected to sidebar like a global header -->
+        <div class="-mx-4 mb-4 border-b border-slate-200 bg-white px-4 py-3 lg:py-4 lg:-mx-8 lg:px-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between shadow-sm">
             <div>
-                <h1 class="text-2xl font-bold text-slate-900"><?php echo trans('expense_management'); ?></h1>
-                <p class="mt-1 text-sm text-slate-600"><?php echo trans('expense_management_desc'); ?></p>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight text-slate-900"><?php echo trans('expense_management'); ?></h1>
+                <p class="mt-1 text-xs md:text-sm text-slate-600"><?php echo trans('expense_management_desc'); ?></p>
             </div>
             <button onclick="openAddExpenseModal()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg transition-all duration-200">
-                <i class="fas fa-plus"></i> <span><?php echo trans('add_expense'); ?></span>
+                <i class="fas fa-plus text-sm"></i>
+                <span><?php echo trans('add_expense'); ?></span>
             </button>
         </div>
 
+        <!-- Expenses list -->
         <div class="rounded-xl bg-white shadow-lg border border-slate-200 overflow-hidden">
+
             <div class="md:hidden">
                 <?php foreach ($expenses as $expense): ?>
                 <div class="p-4 border-b">
